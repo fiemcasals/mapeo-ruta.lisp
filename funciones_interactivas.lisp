@@ -1,3 +1,6 @@
+
+                #| DEFINE LAS FUNCIONES QUE SOLICITAN DATOS AL USUARIO |#
+
 (defun solicitar-coordenadas ()
   "Solicita al usuario la latitud y longitud en dos dígitos y devuelve una lista con ambos valores."
   (format t "Ingrese la latitud (en formato XX): ")
@@ -9,7 +12,13 @@
                      (read-line)))
          (latitud-num (read-from-string latitud))
          (longitud-num (read-from-string longitud)))
-    (list latitud-num longitud-num)))  ;; Devolver una lista con los valores
+    ;; Verifica que latitud-num y longitud-num sean números y retorna la lista
+    (if (and (numberp latitud-num) (numberp longitud-num))
+        (list latitud-num longitud-num)
+        (progn
+          (format t "Error: La latitud o longitud ingresada no es válida.~%")
+          nil))))
+
 
 (defun dist-max-sin-sumin  ()
 "Solicita la distancia máxima a recorrer sin suministros por parte del elemento."
@@ -21,7 +30,7 @@
 
 (defun puestos-suministros ()
   "Solicita el número de puestos de suministros, y para cada uno, solicita su nombre y coordenadas, devolviendo una lista de sublistas con el nombre del puesto y sus coordenadas."
-  (format t "¿Cuántos puestos de suministros están disponibles? ")
+  (format t "¿Cuantos puestos de suministros nuevo desea cargar? ")
   (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
   (let* ((num-puestos (parse-integer (read-line)))  ;; Leer el número de puestos
          (puestos '()))  ;; Inicializar la lista de puestos

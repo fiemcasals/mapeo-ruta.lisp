@@ -1,4 +1,4 @@
-;; Declarar la variable global *puestos-suministros*
+;; Decla  ar la variable global *puestos-suministros*
 (defvar *puestos-suministros* nil
   "Lista de todos los puestos de suministros obtenidos de la base de datos.")
 
@@ -86,21 +86,8 @@
   "Imprime el valor y el tipo de dato de un valor."
   (format t "~A: ~A (Tipo: ~A)~%" label valor (type-of valor)))
 
-(defun verificar-y-imprimir-tipos (lat-actual long-actual lat-puesto long-puesto)
-  "Verifica el tipo de los parámetros y los imprime si no son REAL."
-  (when (or (not (realp lat-actual))
-            (not (realp long-actual))
-            (not (realp lat-puesto))
-            (not (realp long-puesto)))
-    (format t "Advertencia: Uno o más parámetros no son del tipo esperado REAL.~%")
-    (imprimir-tipo-y-dato "Latitud actual" lat-actual)
-    (imprimir-tipo-y-dato "Longitud actual" long-actual)
-    (imprimir-tipo-y-dato "Latitud del puesto" lat-puesto)
-    (imprimir-tipo-y-dato "Longitud del puesto" long-puesto)))
 
-(defun parse-float (string)
-  "Convierte una cadena de texto a un número flotante.
-   Si la conversión falla, retorna NIL."
+(defun parse-float (string);Convierte una cadena de texto a un número flotante. Si la conversión falla, retorna NIL.
   (ignore-errors
     (let ((value (parse-integer string :junk-allowed t)))
       (if (and value (not (string= string (princ-to-string value))))
@@ -108,11 +95,8 @@
           value))))
 
 
-    (defun filtrar-puestos-procesados (puestos-procesados posicion distancia-max)
-    "Filtra los puestos de suministros que están dentro de la distancia máxima desde el punto de referencia."
-    
-
-    (let* ((lat-actual (first posicion))  ;; Latitud del punto de referencia
+    (defun filtrar-puestos-procesados (puestos-procesados posicion distancia-max);Filtra los puestos de suministros que están dentro de la distancia máxima desde el punto de referencia.
+        (let* ((lat-actual (first posicion))  ;; Latitud del punto de referencia
             (long-actual (second posicion)) ;; Longitud del punto de referencia
             (puestos-filtrados '()))       ;; Lista para almacenar los puestos filtrados
 

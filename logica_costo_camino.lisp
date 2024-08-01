@@ -1,3 +1,4 @@
+ 
                             #| FUNCIONES COMUNES A TODOS |#
 
 
@@ -17,12 +18,10 @@
     (terpri)  );; Imprime una línea en blanco
 
 
-
                                       #| PUESTO DE AGUA |#
 
 
-
-;; Declarar la variable global *puestos-suministros*
+;; Declarar la variable global *puestos-ag*
 (defvar *puestos-ag* nil
   "Lista de todos los puestos de agua obtenidos de la base de datos.")
 
@@ -44,14 +43,12 @@
             (fourth puesto)
             (sixth puesto))))
 
-
-
                                    #|        QBN          |#
 
 
 #| SEGUIMOS CON LA LOGICA PARA LEVANTAR LAS TABLAS DE QBN |#
 
-;; Declarar la variable global *puestos-suministros*
+;; Declarar la variable global *puestos-qbn*
 (defvar *puestos-qbn* nil
   "Lista de todos los puestos de qbn obtenidos de la base de datos.")
 
@@ -77,11 +74,9 @@
 
                                  #|        Eno          |#
 
-
-
 #| SEGUIMOS CON LA LOGICA PARA LEVANTAR LAS TABLAS DE Eno |#
 
-;; Declarar la variable global *puestos-suministros*
+;; Declarar la variable global *puestos-Eno*
 (defvar *puestos-eno* nil
   "Lista de todos los puestos de eno obtenidos de la base de datos.")
 
@@ -113,7 +108,7 @@
 
 #| SEGUIMOS CON LA LOGICA PARA LEVANTAR LAS TABLAS DE REFUERZOS |#
 
-;; Declarar la variable global *puestos-suministros*
+;; Declarar la variable global *puestos-refuerzos*
 (defvar *puestos-refuerzos* nil
   "Lista de todos los puestos de refuerzos obtenidos de la base de datos.")
 
@@ -139,42 +134,8 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #| LA SIGUIENTE FUNCION DE CALCULO DE DISTANCIA LA VOY A NECESITAR MAS ADELATNE |#
 #|(let ((distancia (calculate-distance lat-actual long-actual lat-puesto long-puesto))) |# ;; Calcular distancia
                
 
-
-
-
-#| no resulto util |#
-#| SEGUNDO PASO: GUARDA LOS PUESTOS EN UNA LISTA "AMIGABLE" |#
-#| en el caso que me arrepienta y lo necesite, tengo que adaptarla |# 
-;; Procesa los puestos de ag y los guarda en una nueva lista
-    (defun procesar-puestos-ag ()
-    "Procesa los puestos de ag almacenados en la lista proporcionada y los guarda en una nueva lista."
-    (let ((puestos-procesados '()))
-        (dolist (puesto *puestos-ag* puestos-procesados)
-        (let* ( (latitud (second   puesto))         ;; Extraer la Latitud
-                (longitud (fourth puesto))      ;; Extraer la Longitud
-                (alcance  (sixth puesto))       ;; Extraer la Alcance
-                ;; Agregar los datos procesados a la lista
-                (nueva-fila (list latitud longitud alcance)))
-            (push nueva-fila puestos-procesados)))
-        ;; Retornar la lista con los datos procesados en orden
-        (reverse puestos-procesados))) ;estos puestos procesados no es una variable global
 
