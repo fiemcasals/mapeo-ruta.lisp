@@ -22,10 +22,10 @@
 
 (defun dist-max-sin-sumin  ()
 "Solicita la distancia máxima a recorrer sin suministros por parte del elemento."
-(format t "Ingrese la distancia máxima a recorrer por su elemento sin necesidad de ser abastecida: ")
+      (format t "Ingrese la distancia máxima a recorrer por su elemento sin necesidad de ser abastecida: ")
 
-(finish-output)  ;; Asegura que el mensaje se imprima de inmediato
-(let ((dist_max (read-line)))
+      (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
+      (let ((dist_max (read-line)))
     (return-from dist-max-sin-sumin dist_max)))  ;; Devolver el valor leído
 
 (defun puestos-suministros ()

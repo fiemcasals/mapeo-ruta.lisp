@@ -2,7 +2,7 @@
                             #| FUNCIONES COMUNES A TODOS |#
 
 
-;; Calcula la distancia euclidiana entre dos puntos dados en latitud y longitud
+;; Calcula la distancia euclidiana ent   dos puntos dados en latitud y longitud
 (defun calculate-distance (lat1 long1 lat2 long2)
   "Calcula la distancia euclidiana entre dos puntos dados en latitud y longitud."
   (sqrt (+ (expt (- lat1 lat2) 2) (expt (- long1 long2) 2))))

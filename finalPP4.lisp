@@ -47,46 +47,57 @@
 (load "logica_costo_camino.lisp")
 (load "logica.lisp")
 
-                #| DEFINO TODAS LAS FUNCIONES QUE ACTUAN SOBRE LA BD |#
+                #| DEFINO TODAS LAS FUNCI ONES QUE ACTUAN SOBRE LA BD |#
 
+  (defun execute-query-single (query)
+  "Ejecuta una consulta SQL y devuelve la primera fila del resultado."
+  (let ((stmt (cl-dbi:prepare *db-connection* query))
+        (result nil))
+    ;; Ejecutar la consulta
+    (cl-dbi:execute stmt)
+    ;; Obtener la primera fila del resultado
+    (setf result (cl-dbi:fetch stmt))
+    ;; Devolver el resultado
+    result))
+  
 
-    (defun execute-query (query &rest params) 
-    ;Ejecuta una consulta SQL con parámetros y devuelve todos los resultados en una lista.
-    (let* ((formatted-query (apply #'format nil query params))
-          (stmt (cl-dbi:prepare *db-connection* formatted-query))
-          (results '())) ;; Lista para almacenar los resultados
-      ;; Ejecutar la consulta
-      (cl-dbi:execute stmt)
-      ;; Iterar sobre los resultados y almacenarlos en la lista
-      (loop for row = (cl-dbi:fetch stmt) while row do
-        (push row results))
-      ;; Devolver la lista de resultados en orden
-      (reverse results)))
+      (defun execute-query (query &rest params) 
+      ;Ejecuta una consulta SQL con parámetros y devuelve todos los resultados en una lista.
+      (let* ((formatted-query (apply #'format nil query params))
+            (stmt (cl-dbi:prepare *db-connection* formatted-query))
+            (results '())) ;; Lista para almacenar los resultados
+        ;; Ejecutar la consulta
+        (cl-dbi:execute stmt)
+        ;; Iterar sobre los resultados y almacenarlos en la lista
+        (loop for row = (cl-dbi:fetch stmt) while row do
+          (push row results))
+        ;; Devolver la lista de resultados en orden
+        (reverse results)))
 
-    (defun insert-data (table columns values)
-  ;Inserta datos en la tabla especificada con columnas y valores proporcionados.
-  ;Utiliza parámetros para prevenir inyección SQL.
-  (let* ((placeholders (make-list (length values) :initial-element "?"))
-         (query (format nil "INSERT INTO ~a (~{~a~^, ~}) VALUES (~{~a~^, ~})"
-                        table columns placeholders))
-         (prepared-query (cl-dbi:prepare *db-connection* query)))
-    ;; Asegúrate de que `values` es una lista
-    (cl-dbi:execute prepared-query values)))
+      (defun insert-data (table columns values)
+    ;Inserta datos en la tabla especificada con columnas y valores proporcionados.
+    ;Utiliza parámetros para prevenir inyección SQL.
+    (let* ((placeholders (make-list (length values) :initial-element "?"))
+          (query (format nil "INSERT INTO ~a (~{~a~^, ~}) VALUES (~{~a~^, ~})"
+                          table columns placeholders))
+          (prepared-query (cl-dbi:prepare *db-connection* query)))
+      ;; Asegúrate de que `values` es una lista
+      (cl-dbi:execute prepared-query values)))
 
 
 (defun update-data-coordenadas (table latitud longitud columns values)
-  (let* ((set-clause (mapcar (lambda (col val)
-                              (format nil "~a = ~a" 
-                                      col 
-                                      (if (and (numberp val) 
-                                               (member col '(costo))) 
-                                          (format nil "~,2f" val)
-                                          (format nil "'~a'" val))))
-                            columns values))
+  "Actualiza los datos en la tabla especificada usando latitud y longitud para la condición."
+  (let* ((set-clause (mapcar
+                      (lambda (col val)
+                        (if (eql val 'NULL)
+                            (format nil "~a = NULL" col)
+                            (format nil "~a = '~a'" col val)))
+                      columns values))
          (query (format nil "UPDATE ~a SET ~{~a~^, ~} WHERE latitud = ~a AND longitud = ~a"
                         table set-clause latitud longitud)))
     (cl-dbi:execute (cl-dbi:prepare *db-connection* query))))
-    
+
+
   (defun update-data (table id columns values)
       ;; Preparar la consulta de actualización
       (let* ((set-clause (mapcar (lambda (col val) (format nil "~a = '~a'" col val)) columns values))
@@ -103,6 +114,12 @@
   "Elimina todos los registros de la tabla especificada."
   ;; Preparar la consulta de eliminación
   (let ((query (format nil "DELETE FROM ~a" table)))
+    (cl-dbi:execute (cl-dbi:prepare *db-connection* query))))
+
+    (defun delete-patida (table)
+  "Elimina todos los registros de partida de la tabla especificada."
+  ;; Preparar la consulta de eliminación
+    (let* ((query (format nil "DELETE FROM ~a WHERE nombre = 'partida'" table)))
     (cl-dbi:execute (cl-dbi:prepare *db-connection* query))))
 
 
@@ -153,8 +170,8 @@
 ;; Llamar a la función y almacenar el resultado en la variable global
 (format t "Ingrese las coordenadas de destino")
 (terpri)  ;; Imprime una línea en blanco
-(setf *destino_final* *destino*)
 (setf *destino* (solicitar-coordenadas))
+(setf *destino_final* *destino*)
 
 
 ;; Definir variable global
@@ -162,11 +179,16 @@
   "Partida.")   
 
 ;; Llamar a la función y almacenar el resultado en la variable global
-(format t "Ingrese las coordenadas de partida") 
+(format t "Ingrese las coordenadas de partida")
+(delete-patida "puestos_suministros") 
 (terpri)  ;; Imprime una línea en blanco
+(delete-all-data "registros")   
 (setq *partida* (solicitar-coordenadas))
-;registro la partida tambien en la base de datos de suministros, para facilitar el proceso
-(insert-data "puestos_suministros" '("nombre" "latitud" "longitud") (list "partida" (car *partida*) (cdr *partida*)))
+;registro la partida tambien en la base de datos de suministros, para facilitar el proceso   
+; (insert-data "registros" '("costo" "latitud" "longitud") (list 0 (car *partida*) (cdr *partida*)))
+(insert-data "puestos_suministros" '("nombre" "latitud" "longitud" "costo") (list "partida" (car *partida*) (cdr *partida*) 0))
+;incorporo el destino a la lista de puestos de suministros, para agregar un cierre
+(insert-data "puestos_suministros" '("nombre" "latitud" "longitud" "costo") (list "destino" (car *destino_final*) (cdr *destino_final*) 9999))
 (terpri)  ;; Imprime una línea en blanco
 
 
