@@ -5,13 +5,13 @@
 (defvar *destino_final* nil)
 (defvar *partida_inicial* nil)
 
- (defun calculo-adyacente-menor (destino)
-  "Busca la coordenada adyacente con el menor costo desde el destino."
+ """(defun calculo-adyacente-menor (destino)
+  
 
 
   (let* ((destino-latitud (car destino))
          (destino-longitud (car(cdr destino)))
-         (costo-pos (list most-positive-fixnum nil)))  ; Inicializa con un valor alto
+         (costo-pos (list most-positive-fixnum nil)))  ; Inicializa con un valor alto, y una posicion nil -> se espera que sea una variable pivote que va a tomar distintas posiciones con su valor correspondiente
         
     (loop for i from -1 to 1
           do (loop for j from -1 to 1
@@ -20,18 +20,67 @@
                              (nueva-latitud (car nueva-pos))
                              (nueva-longitud (car(cdr nueva-pos)))
                              (nuevo-costo (verificar-registro nueva-latitud nueva-longitud))
-                             ;(nuevo-costo (car(cdr(car result))))
                             )
                            
                         (when (and nuevo-costo (< nuevo-costo (car costo-pos)))
                           (setf costo-pos (list nuevo-costo nueva-pos))
                         )
                           )))
+    costo-pos))  """ 
+
+(defun calculo-adyacente-menor (destino)
+  "Busca la coordenada adyacente con el menor costo desde el destino. 
+   Si el destino es nil, reporta un error y retorna nil."
+  (if (null destino)
+      (progn
+        (print "No hay un lugar claro de destino.")
+        nil)  ; Retorna nil si el destino es nil
+      (let* ((destino-latitud (car destino))
+             (destino-longitud (car (cdr destino)))
+             (costo-pos (list most-positive-fixnum nil)))  ; Inicializa con un valor alto y posición nil
+
+        (loop for i from -1 to 1
+              do (loop for j from -1 to 1
+                       unless (and (= i 0) (= j 0))  ; Excluye la posición central
+                       do (let* ((nueva-pos (list (+ destino-latitud i) (+ destino-longitud j)))
+                                  (nueva-latitud (car nueva-pos))
+                                  (nueva-longitud (car (cdr nueva-pos)))
+                                  (nuevo-costo (verificar-registro nueva-latitud nueva-longitud)))
+                           
+                            (when (and nuevo-costo (< nuevo-costo (car costo-pos)))
+                              (setf costo-pos (list nuevo-costo nueva-pos))))))
+        costo-pos)))  ; Retorna el costo más bajo encontrado
+
+
+(defun calculo-adyacente-menor-ptos-intermedios (destino)
+  "Busca la coordenada adyacente con el menor costo desde el destino. Es decir, va buscando desde el destino hacia el punto de partida"
+
+
+  (let* ((destino-latitud (car destino))
+         (destino-longitud (car(cdr destino)))
+         (costo-pos (list most-positive-fixnum nil)))  ; Inicializa con un valor alto, y una posicion nil -> se espera que sea una variable pivote que va a tomar distintas posiciones con su valor correspondiente
+        
+    (loop for i from -1 to 1
+          do (loop for j from -1 to 1
+                   unless (and (= i 0) (= j 0))  ; Excluye la posición central
+                   do (let* ((nueva-pos (list (+ destino-latitud i) (+ destino-longitud j)))
+                             (nueva-latitud (car nueva-pos))
+                             (nueva-longitud (car(cdr nueva-pos)))
+                             (nuevo-costo (verificar-registro-ptos-intermedios nueva-latitud nueva-longitud))
+                            )
+                           
+                       (format t "el valor de nuevo-costo es ~a~%" nuevo-costo)
+                       (format t "para las coordenadas: ~a ~a~%" nueva-latitud nueva-longitud )
+                        (when (and nuevo-costo (< nuevo-costo (car costo-pos)))
+                          (setf costo-pos (list nuevo-costo nueva-pos))
+                        )
+                          )))
+    (format t "el costo y posicion seleccionado fue ~a~%" costo-pos)
     costo-pos))   
 
 
 (defun insertar-en-registros-ptos-intermedios (costo latitud longitud #|reconocida|# origen destino)
- 
+
   
   ;; Extraer los valores de origen y destino si son listas CONS
   (let* ((origen-lat (if (and (listp origen) (= (length origen) 2))
@@ -54,6 +103,16 @@
     (insert-data table columns values)))
 
 
+(defun insertar-en-registros-ptos-ruta (peso latitud longitud )
+
+  (print peso)
+  ;; Extraer los valores de origen y destino si son listas CONS
+  (let* ((table "ruta")
+       (columns '("peso" "latitud" "longitud"))
+       (values (list peso latitud longitud))) 
+  (insert-data table columns values))
+)  
+
 
 (defun convertir-a-decimales (valor)
   "Convierte un valor a una lista de números decimales."
@@ -61,7 +120,7 @@
       (mapcar (lambda (x) (float x)) valor)
       (float valor)))
 
-(defun ptos-intermedios ()
+(defun  ptos-intermedios ()
   "Persiste en la tabla `registros_ptos_intermedios` el camino por tramos."
   (let* ((actual (convertir-a-decimales *destino*)) ; Convertir *destino* a formato decimal
          (partida (convertir-a-decimales *partida*))) ; Convertir *partida* a formato decimal
@@ -154,30 +213,50 @@
     
     ;; Si no hay destino, actualiza la tabla y procede
     (progn
+    
     (setq *partida* (obtener-posicion-menor-costo-suministros))
+    (format t "el nuevo punto de partida seleccionado es ~a~%" *partida*)
+    (if (equal *partida* *destino_final*)
+          (progn
+          (print "se llego al final:")   
+          (entregar-ruta)
+          (sb-ext:exit)) ;; Usa 'sb-ext:exit' para terminar el programa
+      (progn
       ; Actualizar registros y empezar nuevamente
       (insertar-en-registros 
         (car *partida*) 
         (cadr *partida*) 
-        (verificar-registro-de-suministros 
+        (verificar-registro-de-suministros ;;este punto seguro te da el costo del pto
           (car *partida*) 
           (cadr *partida*)))
       
       
-      ;; Verificar si la nueva partida es el destino final
-      (if (equal *partida* *destino_final*)
-          (progn
-          (print "se llego al final")   
-          (entregar-ruta *destino_final*)
-          (sb-ext:exit)) ;; Usa 'sb-ext:exit' para terminar el programa
       (empezar))
       
-      )) 
+      ))
 
-      ))))
+      )))))
 
 (defun verificar-registro (latitud longitud);Verifica si existe un registro en la tabla registro con los valores dados de latitud y longitud. Devuelve el costo si existe, de lo contrario devuelve NIL.
   (let* ((query (format nil "SELECT costo FROM registros WHERE latitud = ~a AND longitud = ~a" latitud longitud))
+         (result (execute-query query)))
+    ;; Depuración: Imprime el resultado de la consulta
+    ;;(format t "Resultado de la consulta: ~a~%" (car(cdr(car result))))
+
+
+    (if (null result)
+        ( progn
+          nil)  
+        (let* ((first-row (first result))
+               (costo (if first-row
+                          (second first-row)
+                          nil)))  ;; Manejo de caso donde first-row puede ser NIL
+          ;; Depuración: Imprime el costo
+          ;;  (format t "Costo cargado: ~a~%" costo)
+          costo))))
+
+(defun verificar-registro-ptos-intermedios (latitud longitud);Verifica si existe un registro en la tabla registro con los valores dados de latitud y longitud. Devuelve el costo si existe, de lo contrario devuelve NIL.
+  (let* ((query (format nil "SELECT costo FROM registros_ptos_intermedios WHERE latitud = ~a AND longitud = ~a" latitud longitud))
          (result (execute-query query)))
     ;; Depuración: Imprime el resultado de la consulta
     ;;(format t "Resultado de la consulta: ~a~%" (car(cdr(car result))))
@@ -298,58 +377,60 @@
                           ;; Si no existe el registro, inserta con el costo calculado
                           (if (null costo)
                                                            
-                              (insertar-en-registros nueva-latitud nueva-longitud calculo-total)  
+                              (insertar-en-registros nueva-latitud nueva-longitud calculo-total)  )
 
                               ;; Si el registro existe, actualiza si el nuevo costo es menor
                              
-                              (when (< calculo-total costo)
+                          (when (and (not(null costo)) (< calculo-total costo))
                                 ( -data-coordenadas "registros" nueva-latitud nueva-longitud '("costo") (list (float calculo-total)))
                               )
                           )
-                            )
+                            
                                      ;; Evaluar y ejecutar las acciones condicionales
                                             ;; Verifica si se ha llegado al destino
                                      
                                             (retroceder nueva-pos calculo-total)
-                            ))
+                            )))
                             
                             );termina el loop
-              ))
-              (let* ((pos-menor (pos_menor)))
+              )
+
+(let* ((pos-menor (pos_menor)))
 
   ;Inserta '1' en reconocido en la tabla 'registros'
-(update-data-coordenadas "registros" (car pos-menor) (cdr pos-menor) '("reconocida") '(1))(recorrer-y-ejecutar pos-menor)          
-    
-    ))  
+(update-data-coordenadas "registros" (car pos-menor) (cdr pos-menor) '("reconocida") '(1))
+(recorrer-y-ejecutar pos-menor)            
+) 
+)
 
+(defun entregar-ruta ()
+  (print "entregando ruta~%")
+  "Persiste en la tabla `registros_ptos_intermedios` el camino por tramos."
+  (let* ((actual (convertir-a-decimales *destino_final*)) ; Convertir *destino* a formato decimal
+         (partida (convertir-a-decimales *partida_inicial*))) ; Convertir *partida* a formato decimal
 
-(defun entregar-ruta (pos)
-  (print "se procede a imprimir la ruta desde el destino hasta el punto inicial")
-  
-  (let* ((pos_latitud (car pos))   ;; Extrae la latitud de la posición actual
-         (pos_longitud (cadr pos)) ;; Extrae la longitud de la posición actual
-         (referente_costo 88888)   ;; Costo inicial de referencia
-         (referente_pos '()))     ;; Posición de referencia inicial
-    
-    ;; Bucle para explorar posiciones adyacentes
-    (loop for i from -1 to 1
-          do (loop for j from -1 to 1
-                   unless (and (= i 0) (= j 0)) ;; Excluye la posición actual
-                   do (let* ((nueva-pos (list (+ pos_latitud i) (+ pos_longitud j))) ;; Calcula nueva posición
-                             (nueva-latitud (car nueva-pos)) ;; Extrae latitud de nueva posición
-                             (nueva-longitud (cadr nueva-pos)) ;; Extrae longitud de nueva posición
-                             (costo (verificar-registro nueva-latitud nueva-longitud))) ;; Verifica el costo
-                      (when (and (not (null costo)) (< costo referente_costo)) ;; Si el costo es menor
-                        (setf referente_costo costo)  ;; Actualiza el costo de referencia
-                        (setf referente_pos nueva-pos) ;; Actualiza la posición de referencia
-                        ;; Inserta la nueva coordenada y su costo en la base de datos
-                        (print "se procede a cargar una coordenada en la tabla ruta")
-                        (update-data-coordenadas "ruta" nueva-latitud nueva-longitud
-                         costo)))))
+    ;; Verificar que ambos, actual y partida, no sean NIL antes de continuar
+    (when (and (not (null actual)) (not (null partida)))
+      (loop until (equal actual partida)
+            do (let* ((adyacente-menor (calculo-adyacente-menor-ptos-intermedios actual)))
+                 (if (cadr adyacente-menor) ; Validar que no sea NIL
+                     (let* ((peso (car adyacente-menor)) ; Extraer el costo directamente
+                            (punto (cadr adyacente-menor))
+                            (latitud (car punto)) ; Extraer la latitud
+                            (longitud (cadr punto))) ; Extraer la longitud
 
-    
-    
-    ;; Continúa si la posición de referencia no es igual a la partida inicial
-    (if (not (equal referente_pos *partida_inicial*))
-        (entregar-ruta referente_pos)))) ;; Llama recursivamente a entregar-ruta
+                        (format t "se va a insertar en ruta el peso ~a, la latitud ~a y su longitud ~a~%" peso latitud longitud)
+                        ;Insertar el registro en la tabla
+                        (insertar-en-registros-ptos-ruta (round peso) latitud longitud)
+
+                       ;; Actualizar la posición actual  
+                       (setq actual (convertir-a-decimales punto)) ; Convertir punto a formato decimal
+                       
+                       (print adyacente-menor)
+                       (print punto))
+                     
+                   ;; Manejar el caso cuando adyacente-menor es NIL
+                   (progn
+                     (print "No hay adyacentes disponibles, no se pudo llegar exitosamente a destino.")
+                     (return))))))))
 

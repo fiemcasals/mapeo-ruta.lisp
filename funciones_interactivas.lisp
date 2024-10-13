@@ -3,7 +3,7 @@
 
 (defun solicitar-coordenadas ()
   "Solicita al usuario la latitud y longitud en dos dígitos y devuelve una lista con ambos valores."
-  (format t "Ingrese la latitud (en formato XX): ")
+  (format t "Ingrese la latitud (en formato XX): ~%")
   (finish-output)  ; Asegura que el mensaje se imprima de inmediato
   (let* ((latitud (read-line))
          (longitud (progn
@@ -22,7 +22,7 @@
 
 (defun dist-max-sin-sumin  ()
 "Solicita la distancia máxima a recorrer sin suministros por parte del elemento."
-      (format t "Ingrese la distancia máxima a recorrer por su elemento sin necesidad de ser abastecida: ")
+      (format t "Ingrese la distancia máxima a recorrer por su elemento sin necesidad de ser abastecida: ~%")
 
       (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
       (let ((dist_max (read-line)))
@@ -30,12 +30,12 @@
 
 (defun puestos-suministros ()
   "Solicita el número de puestos de suministros, y para cada uno, solicita su nombre y coordenadas, devolviendo una lista de sublistas con el nombre del puesto y sus coordenadas."
-  (format t "¿Cuantos puestos de suministros nuevo desea cargar? ")
+  (format t "¿Cuantos puestos de suministros nuevo desea cargar? ~%")
   (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
   (let* ((num-puestos (parse-integer (read-line)))  ;; Leer el número de puestos
          (puestos '()))  ;; Inicializar la lista de puestos
     (dotimes (i num-puestos puestos)  ;; Iterar sobre el número de puestos
-      (format t "Ingrese el nombre del puesto ~a: " (1+ i))
+      (format t "Ingrese el nombre del puesto ~a: ~%" (1+ i))
       (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
       (let* ((nombre-puesto (read-line))
              (coordenadas (solicitar-coordenadas)))  ;; Obtener coordenadas
@@ -43,19 +43,19 @@
 
 (defun solicitar-alcance ()
   "Solicita al usuario el alcance de una zona y devuelve el valor."
-  (format t "Ingrese la extension afectada: ")
+  (format t "Ingrese la extension afectada: ~%")
   (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
   (read-line)) 
 
 (defun solicitar-magnitud ()
   "Solicita al usuario la magnitud del elemento."
-  (format t "Ingrese la magnitud del elemento: ")
+  (format t "Ingrese la magnitud del elemento: ~%")
   (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
   (parse-integer (read-line)))   
 
 (defun registrar-zonas ()
   "Consulta si se registran zonas QBN, y si es afirmativo, solicita cuántas zonas y sus detalles."
-  (format t "¿Se registran zonas afectadas? (sí/no): ") 
+  (format t "¿Se registran zonas afectadas? (sí/no): ~%") 
   (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
   (let* ((respuesta (string-downcase (string-trim '(#\Space #\Tab) (read-line))))
          (respuesta-valida (or (string= respuesta "sí") (string= respuesta "si"))))  ;; Considera "si" como una respuesta válida
@@ -79,20 +79,20 @@
 
 (defun registrar-unidades ()
   "Consulta si se registran unidades y, si es afirmativo, solicita cuántas y sus detalles."
-  (format t "¿Se registran unidades? (sí/no): ")
+  (format t "¿Se registran unidades? (sí/no): ~%")
   (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
   (let* ((respuesta (string-downcase (string-trim '(#\Space #\Tab) (read-line))))
          (respuesta-valida (or (string= respuesta "sí") (string= respuesta "si"))))  ;; Considera "si" como una respuesta válida
     (if respuesta-valida
         (progn
-          (format t "¿En cuántos lugares? ")
+          (format t "¿En cuántos lugares? ~%")
           (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
           (let* ((num-unidades (parse-integer (read-line)))  ;; Leer el número de unidades
                  (unidades '()))  ;; Inicializar la lista de unidades
             (dotimes (i num-unidades unidades)  ;; Iterar sobre el número de unidades
-              (format t "Ingrese las coordenadas para la unidad ~a (latitud y longitud): " (1+ i))
+              (format t "Ingrese las coordenadas para la unidad ~a (latitud y longitud): ~%" (1+ i))
               (finish-output)  ;; Asegura que el mensaje se imprima de inmediato
-              (terpri)  ;; Imprime una línea en blanco
+              
               (let* ((coordenadas (solicitar-coordenadas))  ;; Obtener coordenadas
                      (latitud (first coordenadas))
                      (longitud (second coordenadas))
@@ -102,7 +102,7 @@
                 (push (list alcance magnitud latitud longitud) unidades)))  ;; Agregar las unidades a la lista
             unidades))  ;; Devolver la lista de unidades    
         (progn
-          (format t "No se registran unidades.")
+          (format t "No se registran unidades.~%")
           (finish-output))))) ;; Mensaje si no se registran unidades
 
 

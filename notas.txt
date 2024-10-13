@@ -1,0 +1,4 @@
+el costo altisimo de destino no se actualiza, solo se registra otra valor al llegar a destino
+
+cuando se reinicia el programa, deberia borrar todos los datos de registros, registros_ptos_intermedios, y de puestos_suminsitros(solo destino y partida)
+

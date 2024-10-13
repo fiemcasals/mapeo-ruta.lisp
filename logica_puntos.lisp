@@ -27,6 +27,8 @@
            (longitud (second pos-menor-costo)))
       ;; Actualizar la columna "reconocida" a TRUE para el registro con menor costo
       (update-data-coordenadas "puestos_suministros" latitud longitud '("reconocida") '(1)  )
+      (print "ingrese 1 a:")
+      (print pos-menor-costo)
       
       ;; Continuar el recorrido usando la posición con el menor costo de los puestos de suministros
       
@@ -56,8 +58,13 @@
   (print "se reporta nuevo destino")    
   (print *destino*)
 
-(print *partida*)
-          (recorrer-y-ejecutar *partida*)
+(when *partida*  ; Verifica si *partida* no es nil
+  (print *partida*)
+  (recorrer-y-ejecutar *partida*))
+
+(when (null *partida*)  ; Si *partida* es nil, imprime el mensaje correspondiente
+  (print "No hay un destino asignado."))
+
 
 (empezar)
       ))
